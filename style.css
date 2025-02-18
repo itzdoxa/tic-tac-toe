@@ -1,0 +1,37 @@
+#gameboard {
+    outline: 2px solid red;
+    width: 400px;
+    height: 400px;
+    margin-top: 75px;
+    display: flex;
+    flex-wrap: wrap;    
+}
+
+.cell {
+    outline: 0.5px solid green;
+    width: 33.33%;
+    height: 33.33%;  
+}
+
+.cross {
+   background-image: url('img/cross.svg');
+}
+
+.circle {
+  background-image: url('img/circle.svg');
+}
+
+.circle, 
+.cross {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+h1 {
+    text-align: center;
+}
+
+.straight-line-cell {
+    background-color: greenyellow;
+}
