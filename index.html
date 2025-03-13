@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,21 +8,73 @@
     <script src="script.js" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header>
         <h1>Tic Tac Toe!</h1>
     </header>
-    <button id="next-round-btn">next round</button>
-    <div id="gameboard">
-        <div class="cell one" data-cellRow="0" data-cellColumn="0"></div>
-        <div class="cell two" data-cellRow="0" data-cellColumn="1"></div>
-        <div class="cell three" data-cellRow="0" data-cellColumn="2"></div>
-        <div class="cell four" data-cellRow="1" data-cellColumn="0"></div>
-        <div class="cell five" data-cellRow="1" data-cellColumn="1"></div>
-        <div class="cell six" data-cellRow="1" data-cellColumn="2"></div>
-        <div class="cell seven" data-cellRow="2" data-cellColumn="0"></div>
-        <div class="cell eight" data-cellRow="2" data-cellColumn="1"></div>
-        <div class="cell nine" data-cellRow="2" data-cellColumn="2"></div>
-    </div>
+
+    <main>
+        <div>
+            <form id="form">
+                <div class="flex">
+                    <label for="player-one-name-input">Player-1 Name</label>
+                    <input type="text" id="player-one-name-input" name="player-one" placeholder="playerOne">
+                </div>
+
+                <div class="flex">
+                    <label for="player-two-name-input">Player-2 Name</label>
+                    <input type="text" id="player-two-name-input" name="player-two" placeholder="playerTwo">
+                </div>
+
+                <div class="flex centre-start-btn">
+                    <button id='submit-btn' type="submit">START</button>
+                </div>
+            </form>
+
+
+            <div id="start-game-info" style="display: none;">
+                <div>
+                    <div class="flex">
+                        <div>Round</div>
+                        <div id="round-count-board">1</div>
+                    </div>
+                    <button id="next-round-btn">next round</button>
+                </div>
+
+                <div id="commentary-board"></div>
+                <div id="score-board">
+                    <div class="flex">
+                        <div>
+                            <img src="img/cross.svg" alt="player one cross mark">
+                        </div>
+                        <div id="player-one-name-display">playerOne</div>
+                        <div id="player-one-score-board">0</div>
+                    </div>
+                    <div class="flex">
+                        <div>
+                            <img src="img/circle.svg" alt="player two circle mark">
+                        </div>
+                        <div id="player-two-name-display">playerTwo</div>
+                        <div id="player-two-score-board">0</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="gameboard">
+                <div class="cell one" data-cellRow="0" data-cellColumn="0"></div>
+                <div class="cell two" data-cellRow="0" data-cellColumn="1"></div>
+                <div class="cell three" data-cellRow="0" data-cellColumn="2"></div>
+                <div class="cell four" data-cellRow="1" data-cellColumn="0"></div>
+                <div class="cell five" data-cellRow="1" data-cellColumn="1"></div>
+                <div class="cell six" data-cellRow="1" data-cellColumn="2"></div>
+                <div class="cell seven" data-cellRow="2" data-cellColumn="0"></div>
+                <div class="cell eight" data-cellRow="2" data-cellColumn="1"></div>
+                <div class="cell nine" data-cellRow="2" data-cellColumn="2"></div>
+            </div>
+        </div>
+    </main>
 </body>
+
 </html>

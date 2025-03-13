@@ -1,29 +1,30 @@
-// gameBoardArray[0][0]
-// gameBoardArray[0][1]
-// gameBoardArray[0][2]
-// gameBoardArray[1][0]
-// gameBoardArray[1][1]
-// gameBoardArray[1][2]
-// gameBoardArray[2][0]
-// gameBoardArray[2][1]
-// gameBoardArray[2][2]
-
-// horizontal 
-// gameBoardArray[0][0] === gameBoardArray[0][1] && gameBoardArray[0][1] === gameBoardArray[0][2]
-// gameBoardArray[1][0] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[1][2]
-// gameBoardArray[2][0] === gameBoardArray[2][1] && gameBoardArray[2][1] === gameBoardArray[2][2]
-
-// vertical 
-// gameBoardArray[0][0] === gameBoardArray[1][0] && gameBoardArray[1][0] === gameBoardArray[2][0]
-// gameBoardArray[0][1] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[2][1]
-// gameBoardArray[0][2] === gameBoardArray[1][2] && gameBoardArray[1][2] === gameBoardArray[2][2]
-
-// diagonal
-// gameBoardArray[1][0] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[2][2]
-// gameBoardArray[0][0] === gameBoardArray[0][1] && gameBoardArray[0][1] === gameBoardArray[0][2]
-
 const gameBoard = document.getElementById('gameboard');
 const nextRoundBtn = document.getElementById('next-round-btn');
+
+const commentaryBoard = document.getElementById('commentary-board');
+const playerOneScoreBoard = document.getElementById('player-one-score-board');
+const playerTwoScoreBoard = document.getElementById('player-two-score-board');
+const roundCountBoard = document.getElementById('round-count-board');
+
+const form = document.getElementById('form');
+const playerOneNameInput = document.getElementById('player-one-name-input');
+const playerTwoNameInput = document.getElementById('player-two-name-input');
+const playerOneNameDisplay = document.getElementById('player-one-name-display');
+const playerTwoNameDisplay = document.getElementById('player-two-name-display');
+
+
+const startGameInfo = document.getElementById('start-game-info');
+
+/*
+the game is starting without the start button
+so first i need to prevent the user from entering marks without the start button, and
+i could do that either by removing the gameboard and showing it when the use clicks start
+
+next round count error 
+show the next round button only when the round has ended, not at the start and during it
+*/
+
+/** make an function for restarting the game */
 
 function player(name, mark) {
      let wins = 0
@@ -37,19 +38,36 @@ function player(name, mark) {
      function getWins() {
           return wins;
      }
-     function displayPlayerCharacter() {
+     function getPlayerMark() {
           return mark;
      }
      function resetWins() {
           wins = 0;
      }
-     return { name, mark, increaseWinsByOne, displayWins, displayPlayerCharacter, getWins, resetWins };
+     return { name, mark, increaseWinsByOne, displayWins, getPlayerMark, getWins, resetWins };
 };
 
-const playerOne = player('Josh', 'X');
-const playerTwo = player('Sam', '0');
+const playerOne = player('playerOne', 'X');
+const playerTwo = player('playerTwo', '0');
+const defaultNameOne = 'playerOne';
+const defaultNameTwo = 'playerTwo';
 
-console.log({ Josh: playerOne.mark, Sam: playerTwo.mark });
+let startBtnClicked = false;
+
+form.addEventListener('submit', function () {
+     event.preventDefault();
+
+     startBtnClicked = true;
+     playerOne.name = playerOneNameInput.value || defaultNameOne;
+     playerTwo.name = playerTwoNameInput.value || defaultNameTwo;
+
+     startGameInfo.style.display = 'block';
+     form.style.display = 'none';
+
+     playerOneNameDisplay.textContent = playerOne.name;
+     playerTwoNameDisplay.textContent = playerTwo.name;
+
+});
 
 const gameBoardArray = [
      [1, 2, 3],
@@ -57,13 +75,20 @@ const gameBoardArray = [
      [7, 8, 9],
 ];
 
-function addMarkToGameboardArray(mark, i, j) {
-     gameBoardArray[i][j] = mark;
+function addMarkToGameboardArray(mark, row, column) {
+     gameBoardArray[row][column] = mark;
 };
 
 let clicks = 0;
-let rounds = 0;
+let rounds = 1;
+let straightLineFound = false; // this variable makes and breaks the game, should it be a global variable?
+
 gameBoard.addEventListener('click', function () {
+
+     // stop the user from entering another mark if a straight line is already found
+     if (straightLineFound) return;
+
+     if (startBtnClicked == false) return;
      if (!event.target.classList.contains('cell')) return;
      if (event.target.classList.contains('circle') || event.target.classList.contains('cross')) return;
 
@@ -78,140 +103,146 @@ gameBoard.addEventListener('click', function () {
      }
 
      clicks++;
-     if (clicks >= 5) {
-          // the round should end if a st line is formed!
-          // maybe add a pop-up to stop the user from entering any more marks
-          // or better yet, just reset the gameboard few seconds after the round has been won.
-          // or maybe use an if statement to check if a strt line is formed, if it is, do not let the user enter 
-          // anymore marks
 
-          // what if the round is a tie???
-          // there wont be any mark returned
-          if (checkForStrtLine()) {
-               const playerSignOfStLine = checkForStrtLine();
-               console.log({ PlayerSignOfStLine: playerSignOfStLine });
-               declareRoundWinner(playerSignOfStLine);
-               if (rounds == 3) {
+     if (clicks >= 5) {
+          const straightLineInfo = checkForStrtLine();
+
+          if (straightLineInfo.strtLine) { // no straight line found if its null
+
+               console.log({ PlayerSignOfStLine: straightLineInfo.playerSignOfStLine });
+               declareRoundWinner(straightLineInfo.playerSignOfStLine);
+               colorStrtLine();
+               rounds++;
+               if (rounds > 3) {
                     declareGameWinner();
+                    // ask to start game again (dont actually write here, see where this logic should be written)
                }
+
+               straightLineFound = true;
+
+          } else if (clicks == 9) {
+               declareRoundWinner(straightLineInfo.playerSignOfStLine);
+               clicks = 0;
+               rounds++;
           }
      };
 });
-/* i need to rethink logic for the clicks, counting rounds, and */
 
 function checkForStrtLine() {
      let playerSignOfStLine = null;
      let strtLine = null;
-     // btw one more thing can happen, what if there are two st lines? 
-     // one of X and one of 0, st. line which forms first should win!
-
 
      // diagonals
      if (gameBoardArray[0][0] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[2][2]) {
           playerSignOfStLine = gameBoardArray[0][0];
-          strtLine = 'diagonal-left';
+          strtLine = [['0,0'], ['1,1'], ['2,2']];
+          return { playerSignOfStLine, strtLine };
      }
      if (gameBoardArray[2][0] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[0][2]) {
           playerSignOfStLine = gameBoardArray[2][0];
-          strtLine = 'diagonal-right'
+          strtLine = [['2,0'], ['1,1'], ['0,2']];
+          return { playerSignOfStLine, strtLine };
      }
 
      // verticals
      if (gameBoardArray[0][0] === gameBoardArray[1][0] && gameBoardArray[1][0] === gameBoardArray[2][0]) {
           playerSignOfStLine = gameBoardArray[0][0];
-          strtLine = 'column-0';
+          strtLine = [['0,0'], ['1,0'], ['2,0']];
+          return { playerSignOfStLine, strtLine };
      }
      if (gameBoardArray[0][1] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[2][1]) {
           playerSignOfStLine = gameBoardArray[0][1];
-          strtLine = 'column-1';
+          strtLine = [['0,1'], ['1,1'], ['2,1']];
+          return { playerSignOfStLine, strtLine };
      }
      if (gameBoardArray[0][2] === gameBoardArray[1][2] && gameBoardArray[1][2] === gameBoardArray[2][2]) {
           playerSignOfStLine = gameBoardArray[0][2];
-          strtLine = 'column-2';
+          strtLine = [['0,2'], ['1,2'], ['2,2']];
+          return { playerSignOfStLine, strtLine };
      }
 
      // horizontals
      if (gameBoardArray[0][0] === gameBoardArray[0][1] && gameBoardArray[0][1] === gameBoardArray[0][2]) {
           playerSignOfStLine = gameBoardArray[0][0];
-          strtLine = 'row-0';
+          strtLine = [['0,0'], ['0,1'], ['0,2']];
+          return { playerSignOfStLine, strtLine };
      }
      if (gameBoardArray[1][0] === gameBoardArray[1][1] && gameBoardArray[1][1] === gameBoardArray[1][2]) {
           playerSignOfStLine = gameBoardArray[1][0];
-          strtLine = 'row-1';
+          strtLine = [['1,0'], ['1,1'], ['1,2']];
+          return { playerSignOfStLine, strtLine };
      }
      if (gameBoardArray[2][0] === gameBoardArray[2][1] && gameBoardArray[2][1] === gameBoardArray[2][2]) {
           playerSignOfStLine = gameBoardArray[2][0];
-          strtLine = 'row-2';
+          strtLine = [['2,0'], ['2,1'], ['2,2']];
+          return { playerSignOfStLine, strtLine };
      }
 
-     return playerSignOfStLine;
-     /* return an object */
+     return { playerSignOfStLine, strtLine };
 };
 
+function colorStrtLine() {
+     const strtLine = checkForStrtLine().strtLine;
 
+     strtLine.forEach(cell => {
+          const [cellRow, cellColumn] = cell[0].split(',');
+          const targetCell = gameBoard.querySelector(`[data-cellRow="${cellRow}"][data-cellColumn="${cellColumn}"]`);
 
-function getIndexOfCellsOfStrtLine() {
-     // so now i have to go from the array to the dom elements
-     // i need to know the index of all the three cells in strt line 
-     // match those three cells in the dom gameboard and add a class 
-     // that adds color to them
-     const strtLineInfo = returnStrtLine().split('-');
-
-     if (strtLineInfo[0] == 'row') {
-          if (strtLineInfo[1] == 0) { }
-          else if (strtLineInfo[1] == 1) { }
-          else if (strtLineInfo[1] == 2) { }
-     }
-     else if (strtLineInfo[0] == 'column') {
-          if (strtLineInfo[1] == 0) { }
-          else if (strtLineInfo[1] == 1) { }
-          else if (strtLineInfo[1] == 2) { }
-     }
-     else if (strtLineInfo[0] == 'diagonal') {
-          if (strtLineInfo[1] == 'left') { }
-          else if (strtLineInfo[1] == 'right') { }
-     }
-
-     for (let cell of gameBoard.children) {
-          if (cell.getAttribute('data-cellRow') == 'rowIndex' && cell.getAttribute('data-cellColumn') == 'columnIndex') {
-               cell.classList.add('straight-line-cell');
+          if (targetCell) {
+               targetCell.classList.add('straight-line-cell');
           }
-     }
+     });
 };
-
 
 console.log(gameBoardArray);
 
 function declareRoundWinner(playerSign) {
      if (playerSign == playerOne.mark) {
           console.log(`${playerOne.name} is the round winner`);
+          commentaryBoard.textContent = `${playerOne.name} is the round winner`;
           playerOne.increaseWinsByOne();
+          playerOneScoreBoard.textContent = playerOne.getWins();
+
      } else if (playerSign == playerTwo.mark) {
           console.log(`${playerTwo.name} is the round winner`);
+          commentaryBoard.textContent = `${playerTwo.name} is the round winner`;
           playerTwo.increaseWinsByOne();
+          playerTwoScoreBoard.textContent = playerTwo.getWins();
+     } else if (playerSign === null) {
+          commentaryBoard.textContent = 'The round is a tie!';
      }
      playerOne.displayWins();
      playerTwo.displayWins();
-     rounds++;
 };
 
 function declareGameWinner() {
      if (playerOne.getWins() > playerTwo.getWins()) {
           console.log(`${playerOne.name} is the winner of the game`)
+          commentaryBoard.textContent = `${playerOne.name} is the winner of the game!`;
      } else if (playerTwo.getWins() > playerOne.getWins()) {
           console.log(`${playerTwo.name} is the winner of the game`)
+          commentaryBoard.textContent = `${playerTwo.name} is the winner of the game!`;
      } else {
-          console.log('The game is a tie.')
-          alert(`The game is a tie.`)
+          commentaryBoard.textContent = 'The game is a tie!'
      }
+
      playerOne.resetWins();
      playerTwo.resetWins();
-     rounds = 0;
+
+     // playerOneScoreBoard.textContent = playerOne.getWins();
+     // playerTwoScoreBoard.textContent = playerTwo.getWins();
+     // these should be changed when the user restarts the game
 };
 
 nextRoundBtn.addEventListener('click', resetGameboard);
 
+/** i need to separate the code for resetting the gameboard and managing round count */
+
 function resetGameboard() {
+     roundCountBoard.textContent = rounds;
+
+     straightLineFound = false;
+
      gameBoardArray[0] = [1, 2, 3];
      gameBoardArray[1] = [4, 5, 6];
      gameBoardArray[2] = [7, 8, 9];
@@ -219,11 +250,19 @@ function resetGameboard() {
      clicks = 0;
 
      for (let cell of gameBoard.children) {
-          if (cell.classList.contains('cross')) {
-               cell.classList.remove('cross');
-          }
-          else if (cell.classList.contains('circle')) {
-               cell.classList.remove('circle')
-          }
+          cell.classList.remove('straight-line-cell')
+          cell.classList.remove('cross');
+          cell.classList.remove('circle')
+     }
+
+     commentaryBoard.textContent = '';
+
+     if (rounds > 3) {
+          roundCountBoard.textContent = '1';
+          rounds = 1;
+
+          // should not be here, separate the code
+          playerOneScoreBoard.textContent = playerOne.getWins();
+          playerTwoScoreBoard.textContent = playerTwo.getWins();
      }
 };
